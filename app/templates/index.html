@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea Shop</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        .product { margin-bottom: 10px; }
+        button { margin-left: 10px; padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>Tea Shop</h1>
+    <div id="products"></div>
+    <div id="message" style="margin-top: 20px; color: green;"></div>
+
+    <script>
+        // Fetch products from backend
+        fetch('http://127.0.0.1:5000/')
+            .then(response => response.json())
+            .then(data => {
+                const productsDiv = document.getElementById('products');
+                data.forEach(product => {
+                    const productEl = document.createElement('div');
+                    productEl.className = 'product';
+                    productEl.innerHTML = `
+                        ${product.product_name} - $${product.price} 
+                        <button onclick="order('${product.product_name}')">Order</button>
+                    `;
+                    productsDiv.appendChild(productEl);
+                });
+            })
+            .catch(err => console.error(err));
+
+        // Handle order click
+        function order(productName) {
+            fetch(`http://127.0.0.1:5000/click`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').innerText = data.message;
+                })
+                .catch(err => console.error(err));
+        }
+    </script>
+
+</body>
+</html>
