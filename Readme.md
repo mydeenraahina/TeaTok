@@ -46,9 +46,5 @@ This project demonstrates a functional backend for a tea ordering site, includin
 
 ---
 
-## How to Run
 
-1. Clone the repository:  
-```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
+
