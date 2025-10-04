@@ -47,25 +47,33 @@
 
 <script>
 let currentPage = 1;
-const perPage = 8; // same as backend
-let searchMode = false; // true when searching
+const perPage = 8;
+let searchMode = false;
 
-// Load products normally (pagination)
-function loadProducts(page) {
-  if(searchMode) return; // prevent normal load while searching
+// Load products from backend (with pagination)
+function loadProducts(page = 1) {
+  if (searchMode) return;
   fetch(`/?page=${page}`)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch page ${page}`);
+      return res.json();
+    })
     .then(data => {
       renderProducts(data);
       updatePagination(data.length);
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error("Error loading products:", err));
 }
 
-// Render product cards
+// Render product cards dynamically
 function renderProducts(products) {
   const productsDiv = document.getElementById('products');
   productsDiv.innerHTML = "";
+
+  if (!products || products.length === 0) {
+    productsDiv.innerHTML = `<p class="text-center text-gray-600 col-span-full">No products found 😢</p>`;
+    return;
+  }
 
   products.forEach(product => {
     const card = document.createElement('div');
@@ -74,14 +82,14 @@ function renderProducts(products) {
       <img src="${product.image}" alt="${product.product_name}" class="w-full h-40 object-cover rounded-md mb-4">
       <h3 class="text-lg font-bold text-orange-600 mb-1">${product.product_name}</h3>
       <p class="text-gray-600 text-sm mb-2 line-clamp-2">${product.description}</p>
-      <div class="text-orange-500 font-bold mb-3">$${product.price}</div>
+      <div class="text-orange-500 font-bold mb-3">₹${product.price}</div>
       <button onclick="order('${product.product_name}')" class="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-semibold mt-auto w-full">Order Now</button>
     `;
     productsDiv.appendChild(card);
   });
 }
 
-// Pagination buttons
+// Pagination buttons state
 function updatePagination(count) {
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
@@ -96,18 +104,23 @@ function updatePagination(count) {
 }
 
 // Pagination actions
-function nextPage() { 
-  currentPage++; 
-  loadProducts(currentPage); 
+function nextPage() {
+  currentPage++;
+  loadProducts(currentPage);
 }
-function prevPage() { 
-  if(currentPage>1){ currentPage--; loadProducts(currentPage); } 
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    loadProducts(currentPage);
+  }
 }
 
-// Search products via backend
+// Search products
 function searchProducts() {
-  const query = document.getElementById('search').value.trim();
-  if(query.length === 0) {
+  const query = document.getElementById('search').value.trim().toLowerCase();
+
+  if (query.length === 0) {
+    // Exit search mode and reload current page
     searchMode = false;
     loadProducts(currentPage);
     return;
@@ -116,21 +129,20 @@ function searchProducts() {
   searchMode = true;
   fetch(`/search?products_name=${encodeURIComponent(query)}`)
     .then(res => {
-      if(res.status === 404) return [];
+      if (res.status === 404) return [];
       return res.json();
     })
     .then(data => {
-      // backend may return single object or array
       const products = Array.isArray(data) ? data : [data];
       renderProducts(products);
-      // hide pagination during search
+      // disable pagination when searching
       document.getElementById('prev').disabled = true;
       document.getElementById('next').disabled = true;
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error("Search error:", err));
 }
 
-// Order function
+// Order button
 function order(productName) {
   fetch(`/click?name=${encodeURIComponent(productName)}`)
     .then(res => res.json())
@@ -146,7 +158,7 @@ function order(productName) {
         </div>
       `;
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error("Order error:", err));
 }
 
 // Initial load
