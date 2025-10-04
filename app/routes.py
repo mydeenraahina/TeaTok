@@ -77,8 +77,6 @@ products = [
 
 ]
 
-
-
 def routing(app):
 
     @app.route('/')
@@ -96,3 +94,15 @@ def routing(app):
     @app.route('/click',methods=["GET"])
     def clicked_product():
         return jsonify({"message":"Thanks For Ordering We will get back soon with your order"})
+    @app.route('/search')
+    def searching_products():
+        matched_products=[]
+        name=request.args.get("products_name")
+        for i in products:
+            if name in i["product_name"].lower():  
+                matched_products.append(i)
+
+        if matched_products:
+            return jsonify(matched_products), 200
+        else:
+            return jsonify({"message": "No data found"}), 404

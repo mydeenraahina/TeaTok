@@ -25,11 +25,13 @@
 
 <!-- Header -->
 <header class="flex items-center justify-between py-6 px-6 bg-white shadow">
-  <div class="flex items-center space-x-3">
-    <img src="/static/logo.jpg" alt="TeaTok Logo" class="w-10 h-10">
+  <div class="flex items-center flex-1 space-x-4">
+    <img src="/static/logo.jpg" alt="TeaTok Logo" class="w-12 h-12">
     <h1 class="text-4xl font-extrabold gradient-text animate-pulse">TeaTok</h1>
+    <input type="text" id="search" placeholder="Search Tea..." 
+           class="ml-6 flex-1 px-4 py-2 border border-orange-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+           oninput="searchProducts()">
   </div>
-  
 </header>
 
 <!-- Products Grid -->
@@ -45,62 +47,90 @@
 
 <script>
 let currentPage = 1;
-const perPage = 5;
+const perPage = 8; // same as backend
+let searchMode = false; // true when searching
 
+// Load products normally (pagination)
 function loadProducts(page) {
+  if(searchMode) return; // prevent normal load while searching
   fetch(`/?page=${page}`)
     .then(res => res.json())
     .then(data => {
-      const productsDiv = document.getElementById('products');
-      productsDiv.innerHTML = "";
-
-      data.forEach(product => {
-        const card = document.createElement('div');
-        card.className = "bg-white rounded-xl shadow hover:shadow-xl transform hover:-translate-y-1 transition p-4 flex flex-col";
-        card.innerHTML = `
-          <img src="${product.image}" alt="${product.product_name}" class="w-full h-40 object-cover rounded-md mb-4">
-          <h3 class="text-lg font-bold text-orange-600 mb-1">${product.product_name}</h3>
-          <p class="text-gray-600 text-sm mb-2 line-clamp-2">${product.description}</p>
-          <div class="text-orange-500 font-bold mb-3">$${product.price}</div>
-          <button onclick="order('${product.product_name}')" class="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-semibold">Order Now</button>
-        `;
-        productsDiv.appendChild(card);
-      });
-
-      const prevBtn = document.getElementById('prev');
-      const nextBtn = document.getElementById('next');
-
-      if (currentPage === 1) {
-        prevBtn.disabled = true;
-        prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      } else {
-        prevBtn.disabled = false;
-        prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      }
-
-      if (data.length < perPage) {
-        nextBtn.disabled = true;
-        nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      } else {
-        nextBtn.disabled = false;
-        nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      }
+      renderProducts(data);
+      updatePagination(data.length);
     })
     .catch(err => console.error(err));
 }
 
-function nextPage() {
-  currentPage++;
-  loadProducts(currentPage);
+// Render product cards
+function renderProducts(products) {
+  const productsDiv = document.getElementById('products');
+  productsDiv.innerHTML = "";
+
+  products.forEach(product => {
+    const card = document.createElement('div');
+    card.className = "bg-white rounded-xl shadow hover:shadow-xl transform hover:-translate-y-1 transition p-4 flex flex-col h-full";
+    card.innerHTML = `
+      <img src="${product.image}" alt="${product.product_name}" class="w-full h-40 object-cover rounded-md mb-4">
+      <h3 class="text-lg font-bold text-orange-600 mb-1">${product.product_name}</h3>
+      <p class="text-gray-600 text-sm mb-2 line-clamp-2">${product.description}</p>
+      <div class="text-orange-500 font-bold mb-3">$${product.price}</div>
+      <button onclick="order('${product.product_name}')" class="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-semibold mt-auto w-full">Order Now</button>
+    `;
+    productsDiv.appendChild(card);
+  });
 }
 
-function prevPage() {
-  if (currentPage > 1) {
-    currentPage--;
+// Pagination buttons
+function updatePagination(count) {
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.classList.toggle('opacity-50', currentPage === 1);
+  prevBtn.classList.toggle('cursor-not-allowed', currentPage === 1);
+
+  nextBtn.disabled = count < perPage;
+  nextBtn.classList.toggle('opacity-50', count < perPage);
+  nextBtn.classList.toggle('cursor-not-allowed', count < perPage);
+}
+
+// Pagination actions
+function nextPage() { 
+  currentPage++; 
+  loadProducts(currentPage); 
+}
+function prevPage() { 
+  if(currentPage>1){ currentPage--; loadProducts(currentPage); } 
+}
+
+// Search products via backend
+function searchProducts() {
+  const query = document.getElementById('search').value.trim();
+  if(query.length === 0) {
+    searchMode = false;
     loadProducts(currentPage);
+    return;
   }
+
+  searchMode = true;
+  fetch(`/search?products_name=${encodeURIComponent(query)}`)
+    .then(res => {
+      if(res.status === 404) return [];
+      return res.json();
+    })
+    .then(data => {
+      // backend may return single object or array
+      const products = Array.isArray(data) ? data : [data];
+      renderProducts(products);
+      // hide pagination during search
+      document.getElementById('prev').disabled = true;
+      document.getElementById('next').disabled = true;
+    })
+    .catch(err => console.error(err));
 }
 
+// Order function
 function order(productName) {
   fetch(`/click?name=${encodeURIComponent(productName)}`)
     .then(res => res.json())
@@ -119,6 +149,7 @@ function order(productName) {
     .catch(err => console.error(err));
 }
 
+// Initial load
 loadProducts(currentPage);
 </script>
 
