@@ -1,30 +1,57 @@
-# TeaTok – Simple Tea Ordering Backend
+# TeaTok – Tea Ordering Backend with Flask 🍵
 
-**TeaTok** is a simple Flask backend project to practice routes, GET requests, JSON responses, searching, and pagination.
-
-This project demonstrates a functional backend for a tea ordering site, including product listing, search, and dummy order confirmation.
-
----
-
-## Features
-
-- **View Products** – Paginated listing of tea products (8 per page).  
-- **Search Products** – Search teas by name using a query parameter.  
-- **Order Tea (Dummy)** – Click “Order Now” to see a confirmation message.  
-- **Backend Focus** – GET routes, query parameters, JSON responses, loops, and conditionals.
+**TeaTok** is a lightweight Flask backend for a tea ordering platform.  
+It demonstrates **paginated product listing, search functionality, and a dummy order confirmation feature**.  
+Perfect for learning **Flask routes, query parameters, JSON responses, and basic frontend integration**.
 
 ---
 
-## Backend Routes
+## Features ✨
 
-| Route              | Method | Description |
-|-------------------|--------|-------------|
-| `/`                | GET    | Returns paginated products (`?page=1`) |
-| `/html`            | GET    | Renders the frontend HTML |
-| `/click`           | GET    | Dummy order endpoint (returns confirmation message) |
-| `/search`          | GET    | Search products by name (`?products_name=Ooty Tea`) |
+- Paginated product listing (8 products per page)
+- Search teas by name using query parameters
+- Dummy order confirmation endpoint
+- 25+ Indian tea varieties included
+- Works with TailwindCSS frontend
 
 ---
+
+## Backend Routes 🔗
+
+| Route        | Method | Description |
+|--------------|--------|-------------|
+| `/`          | GET    | Returns paginated products (`?page=1`) |
+| `/html`      | GET    | Renders the frontend HTML page |
+| `/click`     | GET    | Dummy order endpoint; returns confirmation message |
+| `/search`    | GET    | Search products by name (`?products_name=Ooty Tea`) |
+
+---
+
+Installation & Setup
+
+---
+# Clone the repository
+git clone https://github.com/yourusername/teatok.git
+cd teatok
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+venv/Scripts/activate
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the backend
+python app.py
+
+# Open in browser
+http://127.0.0.1:5000/html
 
 ## Screenshots
 
@@ -42,9 +69,11 @@ This project demonstrates a functional backend for a tea ordering site, includin
 ## Technologies
 
 - **Backend:** Python, Flask  
-- **Data:** Static Python list of products  
+- **Database:** SQLite via SQLAlchemy
+- **Frontend:** TailwindCSS (optional integrated HTML)
 
 ---
+
 
 
 
