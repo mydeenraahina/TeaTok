@@ -1,3 +1,4 @@
+from run import app
 class Config():
     DEBUG=True
     SQLALCHEMY_DATABASE_URI="sqlite:///mydb.db" 
